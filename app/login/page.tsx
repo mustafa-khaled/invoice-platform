@@ -22,15 +22,20 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form
-            action={async () => {
+            action={async (formData) => {
               "use server";
-              await signIn();
+              await signIn("nodemailer", formData);
             }}
             className="space-y-2"
           >
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input placeholder="john@mail.com" />
+              <Input
+                placeholder="john@mail.com"
+                name="email"
+                type="email"
+                required
+              />
             </div>
 
             <Button className="w-full">Submit</Button>
