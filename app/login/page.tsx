@@ -36,16 +36,17 @@ export default async function LoginPage() {
             className="space-y-2"
           >
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 placeholder="john@mail.com"
                 name="email"
+                id="email"
                 type="email"
                 required
               />
             </div>
 
-            <SubmitButton className="w-full">Submit</SubmitButton>
+            <SubmitButton>Submit</SubmitButton>
           </form>
         </CardContent>
       </Card>
