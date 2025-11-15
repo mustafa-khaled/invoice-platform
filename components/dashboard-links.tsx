@@ -1,0 +1,47 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { HomeIcon, Users2 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export const dashboardLinks = [
+  {
+    id: 1,
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: HomeIcon,
+  },
+  {
+    id: 2,
+    name: "Invoices",
+    href: "/invoices",
+    icon: Users2,
+  },
+];
+
+export default function DashboardLinks() {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {dashboardLinks.map((link) => {
+        return (
+          <Link
+            href={link.href}
+            key={link.id}
+            className={cn(
+              pathname === link.href
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground",
+              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary duration-200"
+            )}
+          >
+            <link.icon className="size-4" />
+            {link.name}
+          </Link>
+        );
+      })}
+    </>
+  );
+}

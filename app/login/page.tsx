@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, signIn } from "../utils/auth";
-import SubmitButton from "@/components/ui/submit-button";
+import SubmitButton from "@/components/submit-button";
 import { redirect } from "next/navigation";
 
 export default async function LoginPage() {
