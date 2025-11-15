@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,9 +7,17 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "../utils/auth";
+import { auth, signIn } from "../utils/auth";
+import SubmitButton from "@/components/ui/submit-button";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
       <Card className="max-w-sm w-full">
@@ -38,7 +45,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <Button className="w-full">Submit</Button>
+            <SubmitButton className="w-full">Submit</SubmitButton>
           </form>
         </CardContent>
       </Card>
