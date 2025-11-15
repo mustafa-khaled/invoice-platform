@@ -5,9 +5,10 @@ import { useForm } from "@conform-to/react";
 import { useActionState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { onboardUser } from "../actions";
-import { onboardingSchema } from "../utils/zoe-schemas";
+
 import SubmitButton from "@/components/submit-button";
+import { onboardUser } from "@/app/actions";
+import { onboardingSchema } from "@/app/utils/zoe-schemas";
 
 export default function OnboardingForm() {
   const [lastResult, action] = useActionState(onboardUser, undefined);
