@@ -1,9 +1,9 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { Button } from "./ui/button";
 
 export default function SubmitButton({
   children,
