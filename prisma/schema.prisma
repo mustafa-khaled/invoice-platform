@@ -95,6 +95,7 @@ model Invoice {
   currency      String
   invoiceNumber Int
   note          String?
+  total         Float         @default(0)
 
   items         InvoiceItem[]   // ← One invoice has many items
   createdAt     DateTime    @default(now())

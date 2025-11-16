@@ -45,7 +45,7 @@ export const invoiceSchema = z.object({
     .min(2, "Invoice name must be at least 2 characters"),
 
   status: z.enum(["PAID", "PENDING", "CANCELLED"]).default("PENDING"),
-  total: z.number().min(1, "1$ is the minimum total amount"),
+  total: z.coerce.number().min(1, "Minimum total is 1$"),
   currency: z.string().nonempty("Currency is required"),
   invoiceNumber: z
     .number()
