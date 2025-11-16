@@ -30,3 +30,7 @@ export async function onboardUser(prevState: unknown, formData: FormData) {
 
   return redirect("/dashboard");
 }
+
+export async function createInvoice(prevState: unknown, formData: FormData) {
+  const session = await requireUser();
+}
