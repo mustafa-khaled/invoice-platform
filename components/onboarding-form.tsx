@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 import SubmitButton from "@/components/submit-button";
 import { onboardUser } from "@/app/actions";
-import { onboardingSchema } from "@/app/utils/zoe-schemas";
+import { onboardingSchema } from "@/app/utils/zod-schemas";
 
 export default function OnboardingForm() {
   const [lastResult, action] = useActionState(onboardUser, undefined);

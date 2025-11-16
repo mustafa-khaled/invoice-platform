@@ -2,7 +2,7 @@
 
 import { parseWithZod } from "@conform-to/zod";
 import { requireUser } from "./utils/hooks";
-import { onboardingSchema } from "./utils/zoe-schemas";
+import { onboardingSchema } from "./utils/zod-schemas";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
