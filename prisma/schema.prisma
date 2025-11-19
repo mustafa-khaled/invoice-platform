@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
+
 }
 
 model User {
@@ -81,9 +82,9 @@ model Authenticator {
 }
 
 model Invoice {
-  id            String        @id @default(uuid())
+  id            String        @id @default(cuid())
   invoiceName   String
-  status        InvoiceStatus
+  status        InvoiceStatus @default(PENDING)
   date          DateTime      @default(now())
   dueDate       Int
   fromName      String
@@ -97,15 +98,15 @@ model Invoice {
   note          String?
   total         Float         @default(0)
 
-  items         InvoiceItem[]   // ← One invoice has many items
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  user          User?       @relation(fields: [userId], references: [id])
-  userId        String?
+  items     InvoiceItem[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User?         @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model InvoiceItem {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   description String
   quantity    Int
   rate        Float

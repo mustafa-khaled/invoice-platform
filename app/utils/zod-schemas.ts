@@ -18,24 +18,9 @@ export const onboardingSchema = z.object({
 export type OnboardingData = z.infer<typeof onboardingSchema>;
 
 export const invoiceItemSchema = z.object({
-  description: z
-    .string()
-    .nonempty("Description is required")
-    .min(2, "Description must be at least 2 characters"),
-
-  quantity: z
-    .number()
-    .min(1, "Quantity is required")
-    .transform(Number)
-    .refine((v) => v > 0, "Quantity must be greater than 0"),
-
-  rate: z
-    .number()
-    .min(1, "Rate is required")
-    .transform(Number)
-    .refine((v) => v >= 0, "Rate must be 0 or greater"),
-
-  amount: z.number().optional(),
+  description: z.string().min(1, "Description is required"),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+  rate: z.coerce.number().min(0, "Rate must be a positive number"),
 });
 
 export const invoiceSchema = z.object({
