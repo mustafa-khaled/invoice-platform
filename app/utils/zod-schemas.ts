@@ -19,64 +19,64 @@ export type OnboardingData = z.infer<typeof onboardingSchema>;
 
 export const invoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+  quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
   rate: z.coerce.number().min(0, "Rate must be a positive number"),
 });
 
 export const invoiceSchema = z.object({
   invoiceName: z
     .string()
-    .nonempty("Invoice name is required")
+    .min(1, "Invoice name is required")
     .min(2, "Invoice name must be at least 2 characters"),
 
   status: z.enum(["PAID", "PENDING", "CANCELLED"]).default("PENDING"),
-  total: z.coerce.number().min(1, "Minimum total is 1$"),
-  currency: z.string().nonempty("Currency is required"),
-  invoiceNumber: z
+
+  // Total is calculated on server, but we validate it exists
+  total: z.coerce.number().min(0, "Total must be a positive number"),
+
+  currency: z.string().min(1, "Currency is required"),
+
+  invoiceNumber: z.coerce
     .number()
-    .min(1, "Invoice number must be a valid number")
-    .transform(Number),
+    .int()
+    .min(1, "Invoice number must be at least 1"),
 
   date: z
     .string()
-    .nonempty("Date is required")
     .min(1, "Date is required")
-    .transform((value) => new Date(value)),
+    .transform((value) => new Date(value))
+    .pipe(z.date()),
 
-  dueDate: z
-    .string()
-    .nonempty("Due date is required")
-    .regex(/^\d+$/, "Due date must be a valid number")
-    .transform(Number),
+  dueDate: z.coerce.number().int().min(0, "Due date must be a valid number"),
 
   fromName: z
     .string()
-    .nonempty("Sender name is required")
+    .min(1, "Sender name is required")
     .min(2, "Sender name must be at least 2 characters"),
 
   fromEmail: z
     .string()
-    .nonempty("Sender email is required")
+    .min(1, "Sender email is required")
     .email("Sender email must be a valid email address"),
 
   fromAddress: z
     .string()
-    .nonempty("Sender address is required")
+    .min(1, "Sender address is required")
     .min(2, "Sender address must be at least 2 characters"),
 
   clientName: z
     .string()
-    .nonempty("Client name is required")
+    .min(1, "Client name is required")
     .min(2, "Client name must be at least 2 characters"),
 
   clientEmail: z
     .string()
-    .nonempty("Client email is required")
+    .min(1, "Client email is required")
     .email("Client email must be a valid email address"),
 
   clientAddress: z
     .string()
-    .nonempty("Client address is required")
+    .min(1, "Client address is required")
     .min(2, "Client address must be at least 2 characters"),
 
   note: z.string().optional(),
@@ -86,4 +86,5 @@ export const invoiceSchema = z.object({
     .min(1, "At least one invoice item is required"),
 });
 
+export type InvoiceItemData = z.infer<typeof invoiceItemSchema>;
 export type InvoiceData = z.infer<typeof invoiceSchema>;

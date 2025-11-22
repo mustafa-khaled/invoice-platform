@@ -34,6 +34,7 @@ export async function onboardUser(prevState: unknown, formData: FormData) {
 export async function createInvoice(prevState: unknown, formData: FormData) {
   const session = await requireUser();
 
+  // Parse and validate form data
   const submission = parseWithZod(formData, {
     schema: invoiceSchema,
   });
@@ -60,44 +61,64 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
   } = submission.value;
 
   // ——————————————————————————————
-  // 1️): Compute amounts from items (server secure)
+  // 1️⃣ Compute amounts from items (server-side security)
   // ——————————————————————————————
   const validatedItems = items.map((item) => ({
     description: item.description,
     quantity: item.quantity,
     rate: item.rate,
-    amount: item.quantity * item.rate,
+    amount: item.quantity * item.rate, // Calculate amount on server
   }));
 
   // ——————————————————————————————
-  // 2️): Compute TOTAL on server (NEVER trust client)
+  // 2️⃣ Compute TOTAL on server (NEVER trust client)
   // ——————————————————————————————
   const computedTotal = validatedItems.reduce(
     (acc, item) => acc + item.amount,
     0
   );
 
-  const invoice = await prisma.invoice.create({
-    data: {
-      invoiceName,
-      invoiceNumber,
-      status,
-      date,
-      dueDate,
-      currency,
-      fromName,
-      fromEmail,
-      fromAddress,
-      clientName,
-      clientEmail,
-      clientAddress,
-      total: computedTotal,
-      note,
+  try {
+    // Create invoice with items in a transaction
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceName,
+        invoiceNumber,
+        status,
+        date,
+        dueDate,
+        currency,
+        fromName,
+        fromEmail,
+        fromAddress,
+        clientName,
+        clientEmail,
+        clientAddress,
+        total: computedTotal, // Use server-calculated total
+        note: note || null,
+        userId: session?.user?.id,
 
-      items: { create: validatedItems },
-    },
-    include: { items: true },
-  });
+        // Create related items
+        items: {
+          create: validatedItems,
+        },
+      },
+      include: {
+        items: true,
+      },
+    });
 
-  return { success: true, invoiceId: invoice.id };
+    // Redirect on success
+    redirect(`/dashboard/invoices/${invoice.id}`);
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+
+    // Return error to client
+    return {
+      status: "error" as const,
+      error: {
+        "": ["Failed to create invoice. Please try again."],
+      },
+    };
+  }
 }

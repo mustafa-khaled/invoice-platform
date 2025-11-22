@@ -25,14 +25,9 @@ import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import InvoiceItemRow from "./invoice-item-row";
 
-interface InvoiceItem {
-  description: string;
-  quantity: number;
-  rate: number;
-}
-
 export default function CreateInvoice() {
   const [lastResult, action] = useActionState(createInvoice, undefined);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [form, fields] = useForm({
     lastResult,
@@ -43,44 +38,41 @@ export default function CreateInvoice() {
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
+    defaultValue: {
+      items: [{ description: "", quantity: 1, rate: 0 }],
+    },
   });
 
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const [items, setItems] = useState<InvoiceItem[]>([
-    { description: "", quantity: 1, rate: 0 },
-  ]);
+  // Get items list from Conform
+  const items = fields.items.getFieldList();
 
   const addItem = () => {
-    setItems([...items, { description: "", quantity: 1, rate: 0 }]);
+    form.insert({
+      name: fields.items.name,
+      defaultValue: { description: "", quantity: 1, rate: 0 },
+    });
   };
 
   const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+    form.remove({
+      name: fields.items.name,
+      index,
+    });
   };
 
-  const updateItem = (
-    index: number,
-    field: keyof InvoiceItem,
-    value: string | number
-  ) => {
-    const newItems = [...items];
-    if (field === "description") {
-      newItems[index].description = String(value);
-    } else {
-      newItems[index][field] = Number(value) || 0;
-    }
-    setItems(newItems);
+  // Calculate totals from form data
+  const calculateTotals = () => {
+    let subtotal = 0;
+    items.forEach((item) => {
+      const itemFields = item.getFieldset();
+      const quantity = Number(itemFields.quantity.value) || 0;
+      const rate = Number(itemFields.rate.value) || 0;
+      subtotal += quantity * rate;
+    });
+    return { subtotal, total: subtotal };
   };
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.quantity * item.rate,
-    0
-  );
-  const total = subtotal;
-
-  const itemsFieldList = fields.items as any;
-  const itemsErrors = itemsFieldList?.errors || [];
+  const { subtotal, total } = calculateTotals();
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -93,22 +85,8 @@ export default function CreateInvoice() {
             value={selectedDate.toISOString()}
           />
 
-          {/* Hidden item inputs for form submission */}
-          {items.map((item, index) => (
-            <div key={index} className="hidden">
-              <input
-                name={`items[${index}].description`}
-                value={item.description}
-                readOnly
-              />
-              <input
-                name={`items[${index}].quantity`}
-                value={item.quantity}
-                readOnly
-              />
-              <input name={`items[${index}].rate`} value={item.rate} readOnly />
-            </div>
-          ))}
+          {/* Hidden total input - calculated on server but needed for validation */}
+          <input type="hidden" name={fields.total.name} value={total} />
 
           <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-4">
@@ -116,7 +94,7 @@ export default function CreateInvoice() {
               <Input
                 name={fields.invoiceName.name}
                 key={fields.invoiceName.key}
-                defaultValue={String(fields.invoiceName.initialValue || "")}
+                defaultValue={fields.invoiceName.initialValue}
                 placeholder="INV 123"
               />
             </div>
@@ -125,15 +103,16 @@ export default function CreateInvoice() {
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="space-y-1">
-              <Label htmlFor="invoiceNum">Invoice No.</Label>
+              <Label htmlFor="invoiceNumber">Invoice No.</Label>
               <div className="flex">
                 <span className="px-3 border border-r-0 rounded-md rounded-r-none bg-muted flex items-center">
                   #
                 </span>
                 <Input
+                  type="number"
                   name={fields.invoiceNumber.name}
                   key={fields.invoiceNumber.key}
-                  defaultValue={String(fields.invoiceNumber.initialValue || "")}
+                  defaultValue={fields.invoiceNumber.initialValue}
                   id="invoiceNumber"
                   placeholder="5"
                   className="rounded-l-none"
@@ -147,7 +126,7 @@ export default function CreateInvoice() {
             <div className="space-y-1">
               <Label>Currency</Label>
               <Select
-                defaultValue="USD"
+                defaultValue={fields.currency.initialValue || "USD"}
                 name={fields.currency.name}
                 key={fields.currency.key}
               >
@@ -173,12 +152,15 @@ export default function CreateInvoice() {
                   placeholder="Your Name"
                   name={fields.fromName.name}
                   key={fields.fromName.key}
+                  defaultValue={fields.fromName.initialValue}
                 />
                 <p className="text-sm text-red-400">{fields.fromName.errors}</p>
                 <Input
                   placeholder="Your Email"
+                  type="email"
                   name={fields.fromEmail.name}
                   key={fields.fromEmail.key}
+                  defaultValue={fields.fromEmail.initialValue}
                 />
                 <p className="text-sm text-red-400">
                   {fields.fromEmail.errors}
@@ -187,6 +169,7 @@ export default function CreateInvoice() {
                   placeholder="Your Address"
                   name={fields.fromAddress.name}
                   key={fields.fromAddress.key}
+                  defaultValue={fields.fromAddress.initialValue}
                 />
                 <p className="text-sm text-red-400">
                   {fields.fromAddress.errors}
@@ -201,16 +184,17 @@ export default function CreateInvoice() {
                   placeholder="Client Name"
                   name={fields.clientName.name}
                   key={fields.clientName.key}
-                  defaultValue={String(fields.clientName.initialValue || "")}
+                  defaultValue={fields.clientName.initialValue}
                 />
                 <p className="text-sm text-red-400">
                   {fields.clientName.errors}
                 </p>
                 <Input
                   placeholder="Client Email"
+                  type="email"
                   name={fields.clientEmail.name}
                   key={fields.clientEmail.key}
-                  defaultValue={String(fields.clientEmail.initialValue || "")}
+                  defaultValue={fields.clientEmail.initialValue}
                 />
                 <p className="text-sm text-red-400">
                   {fields.clientEmail.errors}
@@ -219,7 +203,7 @@ export default function CreateInvoice() {
                   placeholder="Client Address"
                   name={fields.clientAddress.name}
                   key={fields.clientAddress.key}
-                  defaultValue={String(fields.clientAddress.initialValue || "")}
+                  defaultValue={fields.clientAddress.initialValue}
                 />
                 <p className="text-sm text-red-400">
                   {fields.clientAddress.errors}
@@ -234,6 +218,7 @@ export default function CreateInvoice() {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className="w-[280px] text-left justify-start"
                   >
@@ -254,7 +239,7 @@ export default function CreateInvoice() {
                     mode="single"
                     selected={selectedDate}
                     onSelect={(date) => setSelectedDate(date || new Date())}
-                    hidden={{ before: new Date() }}
+                    disabled={{ before: new Date() }}
                   />
                 </PopoverContent>
               </Popover>
@@ -266,7 +251,7 @@ export default function CreateInvoice() {
               <Select
                 name={fields.dueDate.name}
                 key={fields.dueDate.key}
-                defaultValue={String(fields.dueDate.initialValue || "")}
+                defaultValue={fields.dueDate.initialValue}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select due date" />
@@ -304,23 +289,27 @@ export default function CreateInvoice() {
             </div>
 
             <div className="space-y-2">
-              {items.map((item, index) => (
-                <InvoiceItemRow
-                  key={index}
-                  index={index}
-                  description={item.description}
-                  quantity={item.quantity}
-                  rate={item.rate}
-                  errors={itemsErrors[index]}
-                  onChange={(field, value) => updateItem(index, field, value)}
-                  onRemove={() => removeItem(index)}
-                  showRemove={items.length > 1}
-                />
-              ))}
+              {items.map((item, index) => {
+                const itemFields = item.getFieldset();
+                const quantity = Number(itemFields.quantity.value) || 0;
+                const rate = Number(itemFields.rate.value) || 0;
+                const amount = quantity * rate;
+
+                return (
+                  <InvoiceItemRow
+                    key={item.key}
+                    itemField={item}
+                    itemFields={itemFields}
+                    amount={amount}
+                    onRemove={() => removeItem(index)}
+                    showRemove={items.length > 1}
+                  />
+                );
+              })}
             </div>
 
-            {itemsErrors && (
-              <p className="text-red-500 text-sm mt-2">{itemsErrors}</p>
+            {fields.items.errors && (
+              <p className="text-red-500 text-sm mt-2">{fields.items.errors}</p>
             )}
           </div>
 
@@ -346,7 +335,7 @@ export default function CreateInvoice() {
               placeholder="Add your note/s right here..."
               name={fields.note.name}
               key={fields.note.key}
-              defaultValue={String(fields.note.initialValue || "")}
+              defaultValue={fields.note.initialValue}
             />
             <p className="text-sm text-red-400">{fields.note.errors}</p>
           </div>

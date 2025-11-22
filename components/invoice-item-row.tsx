@@ -1,109 +1,101 @@
-"use client";
-
-import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
 import { X } from "lucide-react";
+import { FieldMetadata } from "@conform-to/react";
+import { Textarea } from "./ui/textarea";
 
 interface InvoiceItemRowProps {
-  index: number;
-  description: string;
-  quantity: number;
-  rate: number;
-  errors?: {
-    description?: string[];
-    quantity?: string[];
-    rate?: string[];
+  itemField: FieldMetadata<{
+    description: string;
+    quantity: number;
+    rate: number;
+  }>;
+  itemFields: {
+    description: FieldMetadata<string>;
+    quantity: FieldMetadata<number>;
+    rate: FieldMetadata<number>;
   };
-  onChange: (
-    field: "description" | "quantity" | "rate",
-    value: string | number
-  ) => void;
+  amount: number;
   onRemove: () => void;
   showRemove: boolean;
 }
 
 export default function InvoiceItemRow({
-  index,
-  description,
-  quantity,
-  rate,
-  errors = {},
-  onChange,
+  itemField,
+  itemFields,
+  amount,
   onRemove,
   showRemove,
 }: InvoiceItemRowProps) {
-  const amount = quantity * rate;
-
-  console.log(errors);
-
   return (
-    <div className="space-y-2 pb-4 border-b">
-      <div className="grid grid-cols-12 gap-4 [&>div]:col-span-2 [&>div]:self-start">
-        <div className="col-span-6!">
-          <Textarea
-            className="h-10 resize-none"
-            placeholder="Item description"
-            name={`items[${index}].description`}
-            value={description}
-            onChange={(e) => onChange("description", e.target.value)}
-          />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description[0]}</p>
-          )}
-        </div>
-        <div>
-          <Input
-            placeholder="0"
-            type="number"
-            inputMode="decimal"
-            name={`items[${index}].quantity`}
-            value={quantity || ""}
-            onChange={(e) =>
-              onChange("quantity", e.target.value ? Number(e.target.value) : "")
-            }
-          />
-          {errors.quantity && (
-            <p className="text-red-500 text-sm mt-1">{errors.quantity[0]}</p>
-          )}
-        </div>
-        <div>
-          <Input
-            placeholder="0.00"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            name={`items[${index}].rate`}
-            value={rate || ""}
-            onChange={(e) =>
-              onChange("rate", e.target.value ? Number(e.target.value) : "")
-            }
-          />
-          {errors.rate && (
-            <p className="text-red-500 text-sm mt-1">{errors.rate[0]}</p>
-          )}
-        </div>
-        <div className="flex items-center justify-between">
-          <Input
-            placeholder="0.00"
-            type="number"
-            disabled
-            value={amount.toFixed(2)}
-            className="bg-muted"
-          />
-          {showRemove && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="ml-2"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+    <div className="grid grid-cols-12 gap-4 items-start">
+      {/* Description - 6 columns */}
+      <div className="col-span-6 space-y-1">
+        <Textarea
+          key={itemFields.description.key}
+          name={itemFields.description.name}
+          defaultValue={itemFields.description.initialValue}
+          placeholder="Item description"
+          className="resize-none h-12"
+        />
+        {itemFields.description.errors && (
+          <p className="text-red-400 text-xs">
+            {itemFields.description.errors}
+          </p>
+        )}
       </div>
+
+      {/* Quantity - 2 columns */}
+      <div className="col-span-2 space-y-1">
+        <Input
+          type="number"
+          key={itemFields.quantity.key}
+          name={itemFields.quantity.name}
+          defaultValue={itemFields.quantity.initialValue}
+          min="1"
+          placeholder="1"
+        />
+        {itemFields.quantity.errors && (
+          <p className="text-red-400 text-xs">{itemFields.quantity.errors}</p>
+        )}
+      </div>
+
+      {/* Rate - 2 columns */}
+      <div className="col-span-2 space-y-1">
+        <Input
+          type="number"
+          key={itemFields.rate.key}
+          name={itemFields.rate.name}
+          defaultValue={itemFields.rate.initialValue}
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        />
+        {itemFields.rate.errors && (
+          <p className="text-red-400 text-xs">{itemFields.rate.errors}</p>
+        )}
+      </div>
+
+      {/* Amount + Remove Button - 2 columns */}
+      <div className="col-span-2 flex items-center gap-2">
+        <span className="text-sm font-medium">${amount.toFixed(2)}</span>
+        {showRemove && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onRemove}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Show field-level error for the entire item if exists */}
+      {itemField.errors && (
+        <p className="col-span-12 text-red-400 text-xs">{itemField.errors}</p>
+      )}
     </div>
   );
 }
