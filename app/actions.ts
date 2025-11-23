@@ -60,26 +60,20 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
     items,
   } = submission.value;
 
-  // ——————————————————————————————
-  // 1️⃣ Compute amounts from items (server-side security)
-  // ——————————————————————————————
+  // Compute amounts from items (server-side security)
   const validatedItems = items.map((item) => ({
     description: item.description,
     quantity: item.quantity,
     rate: item.rate,
-    amount: item.quantity * item.rate, // Calculate amount on server
+    amount: item.quantity * item.rate,
   }));
 
-  // ——————————————————————————————
-  // 2️⃣ Compute TOTAL on server (NEVER trust client)
-  // ——————————————————————————————
   const computedTotal = validatedItems.reduce(
     (acc, item) => acc + item.amount,
     0
   );
 
   try {
-    // Create invoice with items in a transaction
     const invoice = await prisma.invoice.create({
       data: {
         invoiceName,
@@ -94,11 +88,9 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
         clientName,
         clientEmail,
         clientAddress,
-        total: computedTotal, // Use server-calculated total
+        total: computedTotal,
         note: note || null,
         userId: session?.user?.id,
-
-        // Create related items
         items: {
           create: validatedItems,
         },
@@ -108,16 +100,34 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
       },
     });
 
-    // Redirect on success
-    redirect(`/dashboard/invoices/${invoice.id}`);
-  } catch (error) {
-    console.error("Error creating invoice:", error);
+    // Redirect AFTER try-catch
+    await redirect(`/dashboard/invoices/${invoice.id}`);
 
-    // Return error to client
+    console.log("✅ Invoice created successfully:", invoice.id);
+  } catch (error) {
+    console.error("❌ ERROR creating invoice:", error);
+
+    // Log more details
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+
+    // Don't catch Next.js redirects
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      console.log("This is a redirect, rethrowing...");
+      throw error;
+    }
+
     return {
       status: "error" as const,
       error: {
-        "": ["Failed to create invoice. Please try again."],
+        "": [
+          `Failed to create invoice: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+        ],
       },
     };
   }

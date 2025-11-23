@@ -18,10 +18,10 @@ importers:
         specifier: ^1.13.3
         version: 1.13.3(zod@3.25.76)
       '@prisma/client':
-        specifier: ^6.19.0
+        specifier: 6.19.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
       '@prisma/extension-accelerate':
-        specifier: ^2.0.2
+        specifier: 2.0.2
         version: 2.0.2(@prisma/client@6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3))
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
@@ -97,7 +97,7 @@ importers:
         specifier: 16.0.1
         version: 16.0.1(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       prisma:
-        specifier: ^6.19.0
+        specifier: 6.19.0
         version: 6.19.0(typescript@5.9.3)
       tailwindcss:
         specifier: ^4

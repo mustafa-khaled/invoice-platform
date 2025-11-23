@@ -7,8 +7,37 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import InvoiceActions from "./invoice-actions";
+import prisma from "@/lib/prisma";
+import { requireUser } from "@/app/utils/hooks";
+import { formatCurrency } from "@/app/utils/format-currency";
+import { Badge } from "./ui/badge";
 
-export default function InvoiceList() {
+async function getData(userId: string) {
+  const data = await prisma.invoice.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      id: true,
+      clientName: true,
+      total: true,
+      createdAt: true,
+      status: true,
+      invoiceName: true,
+      currency: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return data;
+}
+
+export default async function InvoiceList() {
+  const session = await requireUser();
+  const data = await getData(session?.user?.id as string);
+
   return (
     <Table>
       <TableHeader>
@@ -23,16 +52,30 @@ export default function InvoiceList() {
       </TableHeader>
 
       <TableBody>
-        <TableRow>
-          <TableCell>INV-001</TableCell>
-          <TableCell>John Doe</TableCell>
-          <TableCell>$500.00</TableCell>
-          <TableCell>Paid</TableCell>
-          <TableCell>2024-06-01</TableCell>
-          <TableCell className="text-right">
-            <InvoiceActions />
-          </TableCell>
-        </TableRow>
+        {data?.map((invoice) => {
+          return (
+            <TableRow key={invoice.id}>
+              <TableCell>{invoice.invoiceName}</TableCell>
+              <TableCell>{invoice.clientName}</TableCell>
+              <TableCell>
+                {formatCurrency(invoice.total, invoice.currency)}
+              </TableCell>
+              <TableCell>
+                <Badge>{invoice.status}</Badge>
+              </TableCell>
+              <TableCell>
+                {new Intl.DateTimeFormat("en-US", {
+                  dateStyle: "medium",
+                }).format(invoice.createdAt)}
+              </TableCell>
+              <TableCell className="text-right">
+                <InvoiceActions
+                // invoiceId={invoice.id}
+                />
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

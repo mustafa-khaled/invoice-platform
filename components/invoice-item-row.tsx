@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { FieldMetadata } from "@conform-to/react";
 import { Textarea } from "./ui/textarea";
+import { formatCurrency } from "@/app/utils/format-currency";
 
 interface InvoiceItemRowProps {
   itemField: FieldMetadata<{
@@ -18,6 +19,7 @@ interface InvoiceItemRowProps {
   amount: number;
   onRemove: () => void;
   showRemove: boolean;
+  currency: string;
 }
 
 export default function InvoiceItemRow({
@@ -26,6 +28,7 @@ export default function InvoiceItemRow({
   amount,
   onRemove,
   showRemove,
+  currency,
 }: InvoiceItemRowProps) {
   return (
     <div className="grid grid-cols-12 gap-4 items-start">
@@ -78,7 +81,8 @@ export default function InvoiceItemRow({
 
       {/* Amount + Remove Button - 2 columns */}
       <div className="col-span-2 flex items-center gap-2">
-        <span className="text-sm font-medium">${amount.toFixed(2)}</span>
+        <Input value={formatCurrency(amount, currency)} disabled />
+
         {showRemove && (
           <Button
             type="button"

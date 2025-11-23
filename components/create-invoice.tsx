@@ -24,10 +24,12 @@ import { useActionState } from "react";
 import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import InvoiceItemRow from "./invoice-item-row";
+import { formatCurrency } from "@/app/utils/format-currency";
 
 export default function CreateInvoice() {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currency, setCurrency] = useState("USD");
 
   const [form, fields] = useForm({
     lastResult,
@@ -129,6 +131,7 @@ export default function CreateInvoice() {
                 defaultValue={fields.currency.initialValue || "USD"}
                 name={fields.currency.name}
                 key={fields.currency.key}
+                onValueChange={(value) => setCurrency(value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a currency" />
@@ -303,6 +306,7 @@ export default function CreateInvoice() {
                     amount={amount}
                     onRemove={() => removeItem(index)}
                     showRemove={items.length > 1}
+                    currency={currency}
                   />
                 );
               })}
@@ -317,12 +321,12 @@ export default function CreateInvoice() {
             <div className="w-1/3">
               <div className="flex items-center justify-between py-2">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(subtotal, currency)}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-t">
-                <span>Total (USD)</span>
+                <span>Total ({currency})</span>
                 <span className="font-medium underline underline-offset-2">
-                  ${total.toFixed(2)}
+                  {formatCurrency(total, currency)}
                 </span>
               </div>
             </div>
