@@ -100,10 +100,7 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
       },
     });
 
-    // Redirect AFTER try-catch
-    await redirect(`/dashboard/invoices/${invoice.id}`);
-
-    console.log("✅ Invoice created successfully:", invoice.id);
+    await redirect("/dashboard/invoices");
   } catch (error) {
     console.error("❌ ERROR creating invoice:", error);
 

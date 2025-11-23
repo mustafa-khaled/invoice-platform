@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/format-currency";
 import { Badge } from "./ui/badge";
+import { InvoiceStatus } from "@prisma/client";
 
 async function getData(userId: string) {
   const data = await prisma.invoice.findMany({
@@ -32,6 +33,19 @@ async function getData(userId: string) {
   });
 
   return data;
+}
+
+function getStatusVariant(status: InvoiceStatus) {
+  switch (status) {
+    case "PAID":
+      return "paid";
+    case "PENDING":
+      return "pending";
+    case "CANCELLED":
+      return "cancelled";
+    default:
+      return "default";
+  }
 }
 
 export default async function InvoiceList() {
@@ -61,7 +75,9 @@ export default async function InvoiceList() {
                 {formatCurrency(invoice.total, invoice.currency)}
               </TableCell>
               <TableCell>
-                <Badge>{invoice.status}</Badge>
+                <Badge variant={getStatusVariant(invoice.status)}>
+                  {invoice.status}
+                </Badge>
               </TableCell>
               <TableCell>
                 {new Intl.DateTimeFormat("en-US", {
