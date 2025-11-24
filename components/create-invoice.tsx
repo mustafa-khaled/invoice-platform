@@ -25,6 +25,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import InvoiceItemRow from "./invoice-item-row";
 import { formatCurrency } from "@/app/utils/format-currency";
+import { formatDate } from "@/app/utils/format-date";
 
 export default function CreateInvoice() {
   const [lastResult, action] = useActionState(createInvoice, undefined);
@@ -227,11 +228,7 @@ export default function CreateInvoice() {
                   >
                     <Calendar1Icon />
                     {selectedDate ? (
-                      <p>
-                        {new Intl.DateTimeFormat("en-US", {
-                          dateStyle: "long",
-                        }).format(selectedDate)}
-                      </p>
+                      <p>{formatDate(selectedDate)}</p>
                     ) : (
                       <span>Pick a date</span>
                     )}

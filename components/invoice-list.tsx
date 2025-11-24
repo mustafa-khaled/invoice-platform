@@ -12,6 +12,7 @@ import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/format-currency";
 import { Badge } from "./ui/badge";
 import { InvoiceStatus } from "@prisma/client";
+import { formatDate } from "@/app/utils/format-date";
 
 async function getData(userId: string) {
   const data = await prisma.invoice.findMany({
@@ -79,11 +80,7 @@ export default async function InvoiceList() {
                   {invoice.status}
                 </Badge>
               </TableCell>
-              <TableCell>
-                {new Intl.DateTimeFormat("en-US", {
-                  dateStyle: "medium",
-                }).format(invoice.createdAt)}
-              </TableCell>
+              <TableCell>{formatDate(invoice.createdAt)}</TableCell>
               <TableCell className="text-right">
                 <InvoiceActions
                 // invoiceId={invoice.id}

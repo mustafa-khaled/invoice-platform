@@ -5,6 +5,12 @@ import { requireUser } from "./utils/hooks";
 import { invoiceSchema, onboardingSchema } from "./utils/zod-schemas";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import {
+  mailClient,
+  mailtrapRecipients,
+  mailtrapSender,
+} from "./utils/mailtrap";
+import { formatDate } from "./utils/format-date";
 
 export async function onboardUser(prevState: unknown, formData: FormData) {
   const session = await requireUser();
@@ -73,59 +79,48 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
     0
   );
 
-  try {
-    const invoice = await prisma.invoice.create({
-      data: {
-        invoiceName,
-        invoiceNumber,
-        status,
-        date,
-        dueDate,
-        currency,
-        fromName,
-        fromEmail,
-        fromAddress,
-        clientName,
-        clientEmail,
-        clientAddress,
-        total: computedTotal,
-        note: note || null,
-        userId: session?.user?.id,
-        items: {
-          create: validatedItems,
-        },
+  const invoice = await prisma.invoice.create({
+    data: {
+      invoiceName,
+      invoiceNumber,
+      status,
+      date,
+      dueDate,
+      currency,
+      fromName,
+      fromEmail,
+      fromAddress,
+      clientName,
+      clientEmail,
+      clientAddress,
+      total: computedTotal,
+      note: note || null,
+      userId: session?.user?.id,
+      items: {
+        create: validatedItems,
       },
-      include: {
-        items: true,
-      },
-    });
+    },
+    include: {
+      items: true,
+    },
+  });
 
-    await redirect("/dashboard/invoices");
-  } catch (error) {
-    console.error("❌ ERROR creating invoice:", error);
+  mailClient.send({
+    from: mailtrapSender,
+    // TODO: You can customize the recipient email as needed if you added your own domain on Mailtrap
+    to: mailtrapRecipients,
+    template_uuid: "94447b52-fcb1-49e7-b92e-90910835df50",
 
-    // Log more details
-    if (error instanceof Error) {
-      console.error("Error name:", error.name);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-    }
+    template_variables: {
+      clientName: clientName,
+      INVOICE_NUMBER: invoiceNumber,
+      ISSUE_DATE: formatDate(date),
+      DUE_DATE: dueDate,
+      AMOUNT: computedTotal,
+      CURRENCY: currency,
+      INVOICE_URL: "Test_Invoice_url",
+    },
+  });
 
-    // Don't catch Next.js redirects
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
-      console.log("This is a redirect, rethrowing...");
-      throw error;
-    }
-
-    return {
-      status: "error" as const,
-      error: {
-        "": [
-          `Failed to create invoice: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`,
-        ],
-      },
-    };
-  }
+  return redirect("/dashboard/invoices");
 }
