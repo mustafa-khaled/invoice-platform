@@ -53,6 +53,8 @@ export default async function InvoiceList() {
   const session = await requireUser();
   const data = await getData(session?.user?.id as string);
 
+  console.log(data);
+
   return (
     <Table>
       <TableHeader>

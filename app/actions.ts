@@ -118,7 +118,7 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
       DUE_DATE: dueDate,
       AMOUNT: computedTotal,
       CURRENCY: currency,
-      INVOICE_URL: "Test_Invoice_url",
+      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
     },
   });
 
