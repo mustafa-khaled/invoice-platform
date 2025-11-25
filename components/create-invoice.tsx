@@ -27,7 +27,19 @@ import InvoiceItemRow from "./invoice-item-row";
 import { formatCurrency } from "@/app/utils/format-currency";
 import { formatDate } from "@/app/utils/format-date";
 
-export default function CreateInvoice() {
+interface iAppProps {
+  firstName: string;
+  lastName: string;
+  address: string;
+  email: string;
+}
+
+export default function CreateInvoice({
+  firstName,
+  lastName,
+  address,
+  email,
+}: iAppProps) {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currency, setCurrency] = useState("USD");
@@ -156,7 +168,7 @@ export default function CreateInvoice() {
                   placeholder="Your Name"
                   name={fields.fromName.name}
                   key={fields.fromName.key}
-                  defaultValue={fields.fromName.initialValue}
+                  defaultValue={`${firstName} ${lastName}`}
                 />
                 <p className="text-sm text-red-400">{fields.fromName.errors}</p>
                 <Input
@@ -164,7 +176,7 @@ export default function CreateInvoice() {
                   type="email"
                   name={fields.fromEmail.name}
                   key={fields.fromEmail.key}
-                  defaultValue={fields.fromEmail.initialValue}
+                  defaultValue={email}
                 />
                 <p className="text-sm text-red-400">
                   {fields.fromEmail.errors}
@@ -173,7 +185,7 @@ export default function CreateInvoice() {
                   placeholder="Your Address"
                   name={fields.fromAddress.name}
                   key={fields.fromAddress.key}
-                  defaultValue={fields.fromAddress.initialValue}
+                  defaultValue={address}
                 />
                 <p className="text-sm text-red-400">
                   {fields.fromAddress.errors}
