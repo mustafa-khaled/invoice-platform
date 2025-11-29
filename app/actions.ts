@@ -107,7 +107,7 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
 
   mailClient.send({
     from: mailtrapSender,
-    //  You can customize the recipient email as needed if you added your own domain on Mailtrap
+    // TODO: You can customize the recipient email as needed if you added your own domain on Mailtrap
     to: mailtrapRecipients,
     template_uuid: "94447b52-fcb1-49e7-b92e-90910835df50",
 
@@ -215,7 +215,7 @@ export async function editInvoice(prevState: unknown, formData: FormData) {
     mailClient.send({
       from: mailtrapSender,
       to: mailtrapRecipients,
-      template_uuid: "94447b52-fcb1-49e7-b92e-90910835df50",
+      template_uuid: "86216c25-bf86-4272-98a5-48790427d8fa",
       template_variables: {
         clientName: clientName,
         INVOICE_NUMBER: invoiceNumber,
