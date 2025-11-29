@@ -18,7 +18,13 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 
-export default function InvoiceActions({ invoiceId }: { invoiceId: string }) {
+export default function InvoiceActions({
+  invoiceId,
+  status,
+}: {
+  invoiceId: string;
+  status: string;
+}) {
   const handleSendReminder = () => {
     toast.promise(
       fetch(`/api/email/${invoiceId}`, {
@@ -69,12 +75,15 @@ export default function InvoiceActions({ invoiceId }: { invoiceId: string }) {
             Delete Invoice
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/">
-            <CheckCircle className="size-4 mr-2" />
-            Mark as paid
-          </Link>
-        </DropdownMenuItem>
+
+        {status !== "PAID" && (
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/invoices/${invoiceId}/paid`}>
+              <CheckCircle className="size-4 mr-2" />
+              Mark as paid
+            </Link>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

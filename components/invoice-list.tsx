@@ -82,7 +82,10 @@ export default async function InvoiceList() {
               </TableCell>
               <TableCell>{formatDate(invoice.createdAt)}</TableCell>
               <TableCell className="text-right">
-                <InvoiceActions invoiceId={invoice.id} />
+                <InvoiceActions
+                  invoiceId={invoice.id}
+                  status={invoice.status}
+                />
               </TableCell>
             </TableRow>
           );
