@@ -3,9 +3,10 @@
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
+import type { VariantProps } from "class-variance-authority";
 
-interface SubmitButtonProps {
+interface SubmitButtonProps extends VariantProps<typeof buttonVariants> {
   children?: React.ReactNode;
   className?: string;
 }
@@ -13,6 +14,7 @@ interface SubmitButtonProps {
 export default function SubmitButton({
   children,
   className,
+  variant,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -21,6 +23,7 @@ export default function SubmitButton({
       className={cn("w-full", className)}
       type="submit"
       disabled={pending}
+      variant={variant}
     >
       {pending ? (
         <>

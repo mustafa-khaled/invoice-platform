@@ -64,7 +64,7 @@ export default function InvoiceActions({ invoiceId }: { invoiceId: string }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/">
+          <Link href={`/dashboard/invoices/${invoiceId}/delete`}>
             <Trash className="size-4 mr-2" />
             Delete Invoice
           </Link>
