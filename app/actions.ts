@@ -211,22 +211,21 @@ export async function editInvoice(prevState: unknown, formData: FormData) {
   });
 
   // Send email notification about the updated invoice
-  if (status === "PENDING") {
-    mailClient.send({
-      from: mailtrapSender,
-      to: mailtrapRecipients,
-      template_uuid: "86216c25-bf86-4272-98a5-48790427d8fa",
-      template_variables: {
-        clientName: clientName,
-        INVOICE_NUMBER: invoiceNumber,
-        ISSUE_DATE: formatDate(date),
-        DUE_DATE: dueDate,
-        AMOUNT: computedTotal,
-        CURRENCY: currency,
-        INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
-      },
-    });
-  }
+  mailClient.send({
+    from: mailtrapSender,
+    to: mailtrapRecipients,
+    template_uuid: "86216c25-bf86-4272-98a5-48790427d8fa",
+    template_variables: {
+      clientName: clientName,
+      INVOICE_NUMBER: invoiceNumber,
+      ISSUE_DATE: formatDate(date),
+      DUE_DATE: dueDate,
+      AMOUNT: computedTotal,
+      CURRENCY: currency,
+      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
+    },
+  });
 
   return redirect("/dashboard/invoices");
 }
+
