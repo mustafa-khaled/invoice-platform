@@ -1,7 +1,11 @@
+import DashboardBlocks from "@/components/dashboard-blocks";
+import DashboardChart from "@/components/dashboard-chart";
+
 export default async function DashboardPage() {
   return (
-    <div>
-      <h1>DashboardPage</h1>
-    </div>
+    <>
+      <DashboardBlocks />
+      <DashboardChart />
+    </>
   );
 }
