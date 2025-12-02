@@ -1,11 +1,15 @@
 import DashboardBlocks from "@/components/dashboard-blocks";
-import DashboardChart from "@/components/dashboard-chart";
+import InvoiceChart from "@/components/invoice-chart";
+import RecentInvoices from "@/components/recent-invoices";
 
 export default async function DashboardPage() {
   return (
     <>
       <DashboardBlocks />
-      <DashboardChart />
+      <div className="grid gap-4 md:gap-4 lg:grid-cols-3">
+        <InvoiceChart />
+        <RecentInvoices />
+      </div>
     </>
   );
 }
