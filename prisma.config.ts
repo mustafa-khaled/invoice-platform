@@ -1,11 +1,9 @@
+import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
+// Prisma 7 config: used by `prisma migrate` and other CLI commands
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  engine: "classic",
   datasource: {
     url: env("DATABASE_URL"),
   },
