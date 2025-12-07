@@ -256,3 +256,4 @@ export async function markInvoiceAsPaid(invoiceId: string) {
 
   return redirect("/dashboard/invoices");
 }
+

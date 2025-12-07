@@ -13,6 +13,7 @@ import { formatCurrency } from "@/app/utils/format-currency";
 import { Badge } from "./ui/badge";
 import { InvoiceStatus } from "@prisma/client";
 import { formatDate } from "@/app/utils/format-date";
+import NoDataFound from "./no-data-found";
 
 async function getData(userId: string) {
   const data = await prisma.invoice.findMany({
@@ -52,6 +53,10 @@ function getStatusVariant(status: InvoiceStatus) {
 export default async function InvoiceList() {
   const session = await requireUser();
   const data = await getData(session?.user?.id as string);
+
+  if (!data?.length) {
+    return <NoDataFound message="No invoices found!" />;
+  }
 
   return (
     <Table>
