@@ -9,6 +9,8 @@ import {
 import prisma from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import NoDataFound from "./no-data-found";
+import { formatDate } from "@/app/utils/format-date";
+import CustomerActions from "./customer-actions";
 
 async function getData(userId: string) {
   const data = await prisma.customer.findMany({
@@ -46,6 +48,7 @@ export default async function CustomersList() {
           <TableHead>Email</TableHead>
           <TableHead>Address</TableHead>
           <TableHead>Created At</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -56,7 +59,10 @@ export default async function CustomersList() {
               <TableCell>{customer.name}</TableCell>
               <TableCell>{customer.email}</TableCell>
               <TableCell>{customer.address}</TableCell>
-              <TableCell>{customer.createdAt.toDateString()}</TableCell>
+              <TableCell>{formatDate(customer.createdAt)}</TableCell>
+              <TableCell className="text-right">
+                <CustomerActions customerId={customer.id} />
+              </TableCell>
             </TableRow>
           );
         })}

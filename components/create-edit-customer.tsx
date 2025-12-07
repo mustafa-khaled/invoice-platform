@@ -4,14 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import SubmitButton from "./submit-button";
-import { createCustomer } from "@/app/actions/customer.actions";
+import { createCustomer, updateCustomer } from "@/app/actions/customer.actions";
 import { useActionState } from "react";
 import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import { customerSchema } from "@/app/utils/customer.schema";
+import { Customer } from "@prisma/client";
 
-export default function CreateCustomer() {
-  const [lastResult, action] = useActionState(createCustomer, undefined);
+export default function CreateEditCustomer({
+  customerData,
+}: {
+  customerData?: Customer;
+}) {
+  const isEdit = !!customerData;
+
+  const callAction = isEdit ? updateCustomer : createCustomer;
+
+  const [lastResult, action] = useActionState(callAction, undefined);
 
   const [form, fields] = useForm({
     lastResult,
@@ -19,6 +28,12 @@ export default function CreateCustomer() {
       return parseWithZod(formData, {
         schema: customerSchema,
       });
+    },
+    defaultValue: {
+      name: customerData?.name || "",
+      email: customerData?.email || "",
+      address: customerData?.address || "",
+      phone: customerData?.phone || "",
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
@@ -28,12 +43,16 @@ export default function CreateCustomer() {
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
-          Create new customer
+          {isEdit ? "Edit customer" : "Create new customer"}
         </CardTitle>
       </CardHeader>
 
       <CardContent>
         <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
+          {isEdit && (
+            <input type="hidden" name="customerId" value={customerData?.id} />
+          )}
+
           <div className="grid md:grid-cols-2 gap-6 [&>div]:space-y-2">
             <div>
               <Label>Customer Name</Label>
@@ -41,6 +60,7 @@ export default function CreateCustomer() {
                 placeholder="Name"
                 name={fields.name.name}
                 key={fields.name.key}
+                defaultValue={fields.name.value}
               />
               <p className="text-sm text-red-400">{fields.name.errors}</p>
             </div>
@@ -52,6 +72,7 @@ export default function CreateCustomer() {
                 type="email"
                 name={fields.email.name}
                 key={fields.email.key}
+                defaultValue={fields.email.value}
               />
               <p className="text-sm text-red-400">{fields.email.errors}</p>
             </div>
@@ -62,6 +83,7 @@ export default function CreateCustomer() {
                 placeholder="Address"
                 name={fields.address.name}
                 key={fields.address.key}
+                defaultValue={fields.address.value}
               />
               <p className="text-sm text-red-400">{fields.address.errors}</p>
             </div>
@@ -72,13 +94,16 @@ export default function CreateCustomer() {
                 placeholder="Phone"
                 name={fields.phone.name}
                 key={fields.phone.key}
+                defaultValue={fields.phone.value}
               />
               <p className="text-sm text-red-400">{fields.phone.errors}</p>
             </div>
           </div>
 
           <div className="flex items-center justify-end mt-2">
-            <SubmitButton className="w-fit">Create customer</SubmitButton>
+            <SubmitButton className="w-fit">
+              {isEdit ? "Update customer" : "Create customer"}
+            </SubmitButton>
           </div>
         </form>
       </CardContent>

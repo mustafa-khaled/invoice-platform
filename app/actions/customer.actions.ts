@@ -37,3 +37,38 @@ export async function createCustomer(prevState: unknown, formData: FormData) {
 
   return redirect("/dashboard/customers");
 }
+
+export async function updateCustomer(prevState: unknown, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: customerSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const { name, email, address, phone } = submission.value;
+
+  if (!session.user?.id) {
+    throw new Error("User ID is missing from session");
+  }
+
+  const userId: string = session.user.id;
+
+  await prisma.customer.update({
+    where: {
+      id: formData.get("customerId") as string,
+    },
+    data: {
+      name,
+      email,
+      address,
+      phone,
+      userId,
+    },
+  });
+
+  return redirect("/dashboard/customers");
+}

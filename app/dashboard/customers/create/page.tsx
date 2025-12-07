@@ -1,5 +1,5 @@
-import CreateCustomer from "@/components/create-customer";
+import CreateEditCustomer from "@/components/create-edit-customer";
 
 export default async function CreateCustomerRoute() {
-  return <CreateCustomer />;
+  return <CreateEditCustomer />;
 }
