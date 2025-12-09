@@ -29,10 +29,6 @@ async function getUserSession(userId: string) {
       address: true,
     },
   });
-
-  if (!data?.firstName || !data?.lastName || !data?.address) {
-    redirect("/onboarding");
-  }
 }
 
 export default async function DashboardLayout({
@@ -41,7 +37,9 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await requireUser();
-  await getUserSession(session?.user?.id as string);
+  if (session?.user?.id) {
+    await getUserSession(session.user.id);
+  }
 
   return (
     <>

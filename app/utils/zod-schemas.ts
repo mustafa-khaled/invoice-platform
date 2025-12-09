@@ -1,21 +1,20 @@
 import { z } from "zod";
 
-export const onboardingSchema = z.object({
-  firstName: z
-    .string()
-    .nonempty("First name is required")
-    .min(2, "First name must be at least 2 characters"),
-  lastName: z
-    .string()
-    .nonempty("Last name is required")
-    .min(2, "Last name must be at least 2 characters"),
-  address: z
-    .string()
-    .nonempty("Address is required")
-    .min(2, "Address must be at least 2 characters"),
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
-export type OnboardingData = z.infer<typeof onboardingSchema>;
+export const registerSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  address: z.string().min(2, "Address must be at least 2 characters"),
+});
+
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 
 export const invoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),

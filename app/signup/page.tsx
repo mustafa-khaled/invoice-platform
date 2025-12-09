@@ -5,12 +5,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
+import { SignupForm } from "@/components/signup-form";
 import { auth } from "../utils/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { LoginForm } from "@/components/login-form";
 
-export default async function LoginPage() {
+export default async function SignupPage() {
   const session = await auth();
 
   if (session?.user) {
@@ -21,17 +21,17 @@ export default async function LoginPage() {
     <div className="flex h-screen w-full items-center justify-center px-4">
       <Card className="max-w-sm w-full">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
           <CardDescription>
-            Enter Your email below to login to your account.
+            Enter your information to create an account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          <SignupForm />
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className="underline">
+              Sign in
             </Link>
           </div>
         </CardContent>
