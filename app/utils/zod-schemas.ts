@@ -88,3 +88,14 @@ export const invoiceSchema = z.object({
 
 export type InvoiceItemData = z.infer<typeof invoiceItemSchema>;
 export type InvoiceData = z.infer<typeof invoiceSchema>;
+
+export const productSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .min(2, "Name must be at least 2 characters"),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
+  description: z.string().optional(),
+});
+
+export type ProductData = z.infer<typeof productSchema>;

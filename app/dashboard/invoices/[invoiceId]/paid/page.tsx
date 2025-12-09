@@ -11,10 +11,10 @@ import paidGif from "@/public/paid.gif";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import SubmitButton from "@/components/submit-button";
-import { markInvoiceAsPaid } from "@/app/actions";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/app/utils/hooks";
+import { markInvoiceAsPaid } from "@/app/actions/invoice.action";
 
 async function Authorize(invoiceId: string, userId: string) {
   const data = await prisma.invoice.findUnique({

@@ -14,7 +14,7 @@ import warningGif from "@/public/warning.gif";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import SubmitButton from "@/components/submit-button";
-import { deleteInvoice } from "@/app/actions";
+import { deleteInvoice } from "@/app/actions/invoice.action";
 
 async function Authorize(invoiceId: string, userId: string) {
   const data = await prisma.invoice.findUnique({
