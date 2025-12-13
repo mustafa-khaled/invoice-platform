@@ -4,6 +4,13 @@ import { X } from "lucide-react";
 import { FieldMetadata } from "@conform-to/react";
 import { Textarea } from "./ui/textarea";
 import { formatCurrency } from "@/app/utils/format-currency";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface InvoiceItemRowProps {
   itemField: FieldMetadata<{
@@ -39,7 +46,7 @@ export default function InvoiceItemRow({
           name={itemFields.description.name}
           defaultValue={itemFields.description.initialValue}
           placeholder="Item description"
-          className="resize-none h-12"
+          className="resize-none h-12" // h-10 to match input height if single line, but textarea usually higher. h-10 is standard shadcn input height. Let's keep h-12 or make it auto.
         />
         {itemFields.description.errors && (
           <p className="text-red-400 text-xs">

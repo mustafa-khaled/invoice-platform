@@ -35,22 +35,14 @@ export function Hero() {
             size="lg"
             className="h-12 px-8 text-base rounded-full shadow-[0_0_20px_-5px_var(--color-primary)] hover:shadow-[0_0_30px_-5px_var(--color-primary)] transition-shadow"
           >
-            <Link href="/signup">
+            <Link href="/dashboard">
               Start for Free <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="h-12 px-8 text-base rounded-full border-white/10 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
-          >
-            <Link href="#demo">View Demo</Link>
           </Button>
         </div>
 
         {/* Mock Dashboard Preview */}
-        <div className="relative max-w-5xl mx-auto rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 hover:scale-[1.01] transition-transform duration-500">
+        <div className="relative max-w-5xl mx-auto rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 hover:scale-[1.01] transition-transform">
           <div className="absolute inset-0 bg-linear-to-t from-background to-transparent z-10 h-full w-full pointer-events-none" />
 
           <div className="p-4 border-b border-white/5 flex items-center gap-4 bg-white/5">

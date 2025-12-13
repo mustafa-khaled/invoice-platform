@@ -15,35 +15,53 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Calendar } from "./ui/calendar";
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import { Textarea } from "./ui/textarea";
 import SubmitButton from "./submit-button";
 import { invoiceSchema } from "@/app/utils/zod-schemas";
-import { useActionState } from "react";
 import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import InvoiceItemRow from "./invoice-item-row";
 import { formatCurrency } from "@/app/utils/format-currency";
 import { formatDate } from "@/app/utils/format-date";
 import { Prisma } from "@prisma/client";
-import { editInvoice } from "@/app/actions/invoice.action";
+import { createInvoice, editInvoice } from "@/app/actions/invoice.action";
 
-interface iAppProps {
-  data: Prisma.InvoiceGetPayload<{
+interface CreateEditInvoiceProps {
+  data?: Prisma.InvoiceGetPayload<{
     include: {
       items: true;
     };
   }>;
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  email?: string;
+  customers?: any[];
+  products?: any[];
 }
 
-export default function EditInvoice({ data }: iAppProps) {
-  const [lastResult, action] = useActionState(editInvoice, undefined);
-  const [selectedDate, setSelectedDate] = useState(new Date(data.date));
-  const [currency, setCurrency] = useState(data.currency);
+export default function CreateEditInvoice({
+  data,
+  firstName,
+  lastName,
+  address,
+  email,
+  customers,
+  products,
+}: CreateEditInvoiceProps) {
+  const isEdit = !!data;
+  const [lastResult, action] = useActionState(
+    isEdit ? editInvoice : createInvoice,
+    undefined
+  );
+  const [selectedDate, setSelectedDate] = useState(
+    data?.date ? new Date(data.date) : new Date()
+  );
+  const [currency, setCurrency] = useState(data?.currency || "USD");
 
   const [form, fields] = useForm({
     lastResult,
-
     onValidate({ formData }) {
       return parseWithZod(formData, {
         schema: invoiceSchema,
@@ -52,23 +70,29 @@ export default function EditInvoice({ data }: iAppProps) {
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
     defaultValue: {
-      invoiceName: data.invoiceName,
-      invoiceNumber: data.invoiceNumber,
-      currency: data.currency,
-      fromName: data.fromName,
-      fromEmail: data.fromEmail,
-      fromAddress: data.fromAddress,
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientAddress: data.clientAddress,
-      dueDate: String(data.dueDate),
-      note: data.note || "",
-      date: data.date.toISOString(),
-      items: data.items.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.rate,
-      })),
+      invoiceName: data?.invoiceName || "",
+      invoiceNumber: data?.invoiceNumber || undefined,
+      currency: data?.currency || "USD",
+      fromName:
+        data?.fromName ||
+        (firstName && lastName ? `${firstName} ${lastName}` : ""),
+      fromEmail: data?.fromEmail || email || "",
+      fromAddress: data?.fromAddress || address || "",
+      clientName: data?.clientName || "",
+      clientEmail: data?.clientEmail || "",
+      clientAddress: data?.clientAddress || "",
+      dueDate: data?.dueDate ? String(data.dueDate) : undefined,
+      note: data?.note || "",
+      date: data?.date
+        ? new Date(data.date).toISOString()
+        : new Date().toISOString(),
+      items: data?.items
+        ? data.items.map((item) => ({
+            description: item.description,
+            quantity: item.quantity,
+            rate: item.rate,
+          }))
+        : [{ description: "", quantity: 1, rate: 0 }],
     },
   });
 
@@ -107,25 +131,33 @@ export default function EditInvoice({ data }: iAppProps) {
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6 [&>form]:space-y-6">
         <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
-          {/* Hidden invoice ID */}
-          <input type="hidden" name="invoiceId" value={data.id} />
+          {/* Hidden invoice ID for edit mode */}
+          {isEdit && data && (
+            <input type="hidden" name="invoiceId" value={data.id} />
+          )}
 
           {/* Hidden date input */}
           <input
-            name={fields.date?.name}
+            name={fields.date.name}
             value={selectedDate.toISOString()}
             readOnly
+            hidden
           />
 
-          {/* Hidden total input - calculated on server but needed for validation */}
+          {/* Hidden total input */}
           <input type="hidden" name="total" value={total} />
 
-          {/* Hidden status input - keep existing status */}
-          <input type="hidden" name="status" value={data.status} />
+          {/* Hidden status input - keep existing status if edit, default is Draft (handled by schema/backend usually, but passing Draft if new) */}
+          <input
+            type="hidden"
+            name={fields.status.name}
+            key={fields.status.key}
+            value={data?.status || "PENDING"}
+          />
 
           <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-4">
-              <Badge variant="secondary">{data.status}</Badge>
+              <Badge variant="secondary">{data?.status || "PENDING"}</Badge>
               <Input
                 name={fields.invoiceName.name}
                 key={fields.invoiceName.key}
@@ -216,6 +248,38 @@ export default function EditInvoice({ data }: iAppProps) {
             <div className="space-y-1">
               <Label>To</Label>
               <div className="space-y-2">
+                <Select
+                  onValueChange={(value) => {
+                    const customer = customers?.find((c) => c.id === value);
+                    if (customer) {
+                      const nameInput = document.querySelector(
+                        `[name="${fields.clientName.name}"]`
+                      ) as HTMLInputElement;
+                      const emailInput = document.querySelector(
+                        `[name="${fields.clientEmail.name}"]`
+                      ) as HTMLInputElement;
+                      const addressInput = document.querySelector(
+                        `[name="${fields.clientAddress.name}"]`
+                      ) as HTMLInputElement;
+
+                      if (nameInput) nameInput.value = customer.name;
+                      if (emailInput) emailInput.value = customer.email;
+                      if (addressInput)
+                        addressInput.value = customer.address || "";
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a Client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers?.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Input
                   placeholder="Client Name"
                   name={fields.clientName.name}
@@ -301,16 +365,49 @@ export default function EditInvoice({ data }: iAppProps) {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">Line Items</h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addItem}
-                className="gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add Item
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addItem}
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Item
+                </Button>
+                {products && products.length > 0 && (
+                  <Select
+                    onValueChange={(value) => {
+                      const product = products.find((p) => p.id === value);
+                      if (product) {
+                        form.insert({
+                          name: fields.items.name,
+                          defaultValue: {
+                            description: product.name,
+                            quantity: 1,
+                            rate: product.price,
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px] h-9">
+                      <SelectValue placeholder="Add from Products" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder-reset" className="hidden">
+                        Select Product
+                      </SelectItem>
+                      {products.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-12 gap-4 mb-4 font-medium [&>p]:col-span-2">
@@ -374,7 +471,9 @@ export default function EditInvoice({ data }: iAppProps) {
           </div>
 
           <div className="flex items-center justify-end">
-            <SubmitButton className="w-fit">Update Invoice</SubmitButton>
+            <SubmitButton className="w-fit">
+              {isEdit ? "Update Invoice" : "Send invoice to client"}
+            </SubmitButton>
           </div>
         </form>
       </CardContent>

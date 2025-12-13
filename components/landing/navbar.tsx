@@ -27,7 +27,7 @@ export function Navbar() {
             Login
           </Link>
           <Button asChild size="sm" className="rounded-full px-6">
-            <Link href="/signup">Get Started</Link>
+            <Link href="/dashboard">Get Started</Link>
           </Button>
         </div>
       </div>
