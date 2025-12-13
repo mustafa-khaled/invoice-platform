@@ -34,184 +34,211 @@ export async function GET(
     format: "a4",
   });
 
-  // Add logo
+  // Add logo (top left)
   try {
     const logoPath = path.join(process.cwd(), "public", "logo.png");
     const logoData = fs.readFileSync(logoPath);
     const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
-    pdf.addImage(logoBase64, "PNG", 15, 10, 25, 25);
+    pdf.addImage(logoBase64, "PNG", 20, 20, 20, 20);
   } catch (error) {
-    console.error("Error loading logo:", error);
+    // If logo fails, show text placeholder
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("YOUR", 20, 28);
+    pdf.text("LOGO", 20, 34);
   }
 
-  // Document border
-  pdf.setDrawColor(226, 232, 240);
-  pdf.setLineWidth(0.5);
-  pdf.rect(10, 10, 190, 277);
-
-  // Invoice title and number badge
-  pdf.setFontSize(28);
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(15, 23, 42);
-  pdf.text("INVOICE", 150, 25);
-
-  // Invoice number badge
-  pdf.setFillColor(216, 180, 226);
-  pdf.roundedRect(145, 30, 50, 10, 2, 2, "F");
+  // Invoice number (top right)
   pdf.setFontSize(10);
-  pdf.setTextColor(255, 255, 255);
-  pdf.text(`#${data.invoiceNumber}`, 170, 36, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setTextColor(100, 100, 100);
+  pdf.text(`NO. ${String(data.invoiceNumber).padStart(6, "0")}`, 190, 25, {
+    align: "right",
+  });
 
-  // Reset text color
-  pdf.setTextColor(15, 23, 42);
+  // Large INVOICE title
+  pdf.setFontSize(48);
+  pdf.setFont("helvetica", "bold");
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("INVOICE", 20, 70);
 
-  // From section with background
-  pdf.setFillColor(241, 245, 249);
-  pdf.roundedRect(15, 45, 85, 30, 2, 2, "F");
+  // Date
   pdf.setFontSize(11);
   pdf.setFont("helvetica", "bold");
-  pdf.text("FROM", 18, 52);
-  pdf.setFontSize(9);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("Date:", 20, 85);
   pdf.setFont("helvetica", "normal");
-  pdf.text(data.fromName, 18, 58);
-  pdf.text(data.fromEmail, 18, 63);
-  const fromAddressLines = pdf.splitTextToSize(data.fromAddress, 75);
-  pdf.text(fromAddressLines, 18, 68);
+  pdf.text(formatDate(data.date), 38, 85);
 
-  // Bill to section with background
-  pdf.setFillColor(241, 245, 249);
-  pdf.roundedRect(105, 45, 85, 30, 2, 2, "F");
+  // Billed to and From sections (side by side)
+  const leftCol = 20;
+  const rightCol = 110;
+  const sectionTop = 100;
+
+  // Billed to (left)
   pdf.setFontSize(11);
   pdf.setFont("helvetica", "bold");
-  pdf.text("BILL TO", 108, 52);
-  pdf.setFontSize(9);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("Billed to:", leftCol, sectionTop);
+
+  pdf.setFontSize(10);
   pdf.setFont("helvetica", "normal");
-  pdf.text(data.clientName, 108, 58);
-  pdf.text(data.clientEmail, 108, 63);
-  const clientAddressLines = pdf.splitTextToSize(data.clientAddress, 75);
-  pdf.text(clientAddressLines, 108, 68);
+  pdf.text(data.clientName ?? "", leftCol, sectionTop + 7);
+  pdf.text(data.clientAddress ?? "", leftCol, sectionTop + 13);
+  pdf.text(data.clientEmail ?? "", leftCol, sectionTop + 19);
 
-  // Invoice details section
-  pdf.setFillColor(241, 245, 249);
-  pdf.roundedRect(15, 82, 175, 20, 2, 2, "F");
-
-  pdf.setFontSize(9);
+  // From (right)
+  pdf.setFontSize(11);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Invoice Date:", 18, 89);
-  pdf.text("Due Date:", 18, 96);
-  pdf.text("Status:", 95, 89);
-  pdf.text("Currency:", 95, 96);
+  pdf.text("From:", rightCol, sectionTop);
 
+  pdf.setFontSize(10);
   pdf.setFont("helvetica", "normal");
-  pdf.text(formatDate(data.date), 45, 89);
-  pdf.text(`${data.dueDate} days`, 45, 96);
+  pdf.text(data.fromName ?? "", rightCol, sectionTop + 7);
+  pdf.text(data.fromAddress ?? "", rightCol, sectionTop + 13);
+  pdf.text(data.fromEmail ?? "", rightCol, sectionTop + 19);
 
-  // Status badge
-  if (data.status === "PAID") {
-    pdf.setFillColor(34, 197, 94);
-  } else if (data.status === "PENDING") {
-    pdf.setFillColor(234, 179, 8);
-  } else {
-    pdf.setFillColor(239, 68, 68);
-  }
-  pdf.roundedRect(110, 85, 20, 6, 1, 1, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(8);
-  pdf.text(data.status, 120, 89, { align: "center" });
-  pdf.setTextColor(15, 23, 42);
+  // Table
+  const tableTop = 145;
+  const tableWidth = 170;
+  const colWidths = {
+    item: 70,
+    quantity: 30,
+    price: 35,
+    amount: 35,
+  };
 
-  pdf.setFontSize(9);
-  pdf.text(data.currency, 115, 96);
+  // Table header with light gray background
+  pdf.setFillColor(240, 240, 240);
+  pdf.rect(20, tableTop, tableWidth, 10, "F");
 
-  // Table header with background
-  const tableTop = 115;
-  pdf.setFillColor(15, 23, 42);
-  pdf.roundedRect(15, tableTop, 175, 10, 2, 2, "F");
-
-  pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(10);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Description", 18, tableTop + 7);
-  pdf.text("Qty", 120, tableTop + 7, { align: "center" });
-  pdf.text("Rate", 145, tableTop + 7, { align: "right" });
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("Item", 25, tableTop + 7);
+  pdf.text("Quantity", 95, tableTop + 7, { align: "center" });
+  pdf.text("Price", 130, tableTop + 7, { align: "center" });
   pdf.text("Amount", 185, tableTop + 7, { align: "right" });
 
-  // Table rows with alternating colors
-  let yOffset = tableTop + 15;
+  // Table rows
+  let yOffset = tableTop + 17;
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
-  pdf.setTextColor(15, 23, 42);
+  pdf.setFontSize(10);
 
-  data.items.forEach(
-    (
-      item: { description: string; quantity: number; amount: number },
-      index: number
-    ) => {
-      // Alternating row background
-      if (index % 2 === 0) {
-        pdf.setFillColor(250, 250, 250);
-        pdf.rect(15, yOffset - 5, 175, 8, "F");
-      }
-
-      pdf.text(item.description, 18, yOffset);
-      pdf.text(item.quantity.toString(), 120, yOffset, { align: "center" });
-      pdf.text(formatCurrency(item.amount, data.currency), 145, yOffset, {
-        align: "right",
+  data.items?.forEach(
+    (item: {
+      description: string;
+      quantity: number;
+      rate: number;
+      amount: number;
+    }) => {
+      pdf.text(item.description ?? "", 25, yOffset);
+      pdf.text((item.quantity ?? 0).toString(), 95, yOffset, {
+        align: "center",
       });
       pdf.text(
-        formatCurrency(item.quantity * item.amount, data.currency),
+        formatCurrency(item.amount ?? 0, data.currency ?? "USD"),
+        130,
+        yOffset,
+        { align: "center" }
+      );
+      pdf.text(
+        formatCurrency(
+          (item.quantity ?? 0) * (item.amount ?? 0),
+          data.currency ?? "USD"
+        ),
         185,
         yOffset,
         { align: "right" }
       );
-      yOffset += 8;
+      yOffset += 10;
     }
   );
 
-  // Separator line
-  pdf.setDrawColor(226, 232, 240);
-  pdf.setLineWidth(0.3);
-  pdf.line(15, yOffset + 2, 190, yOffset + 2);
+  // Total
+  yOffset += 5;
+  const totalAmount =
+    data.items?.reduce(
+      (sum: number, item: { quantity: number; rate: number; amount: number }) =>
+        sum + (item.quantity ?? 0) * (item.amount ?? 0),
+      0
+    ) ?? 0;
 
-  // Total section with background
-  yOffset += 10;
-  const totalAmount = data.items.reduce(
-    (sum, item: { quantity: number; amount: number }) =>
-      sum + item.quantity * item.amount,
-    0
-  );
-
-  pdf.setFillColor(216, 180, 226);
-  pdf.roundedRect(130, yOffset - 3, 60, 12, 2, 2, "F");
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.setTextColor(15, 23, 42);
-  pdf.text("TOTAL:", 135, yOffset + 5);
-  pdf.text(formatCurrency(totalAmount, data.currency), 185, yOffset + 5, {
+  pdf.setFontSize(11);
+  pdf.text("Total", 150, yOffset);
+  pdf.text(formatCurrency(totalAmount, data.currency ?? "USD"), 185, yOffset, {
     align: "right",
   });
 
-  // Additional notes section
+  // Payment method and notes
+  yOffset += 20;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10);
+  pdf.text("Payment method:", 20, yOffset);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(data.status === "PAID" ? "Paid" : "Pending", 60, yOffset);
+
   if (data.note) {
-    yOffset += 25;
-    pdf.setFillColor(241, 245, 249);
-    pdf.roundedRect(15, yOffset - 5, 175, 25, 2, 2, "F");
-
+    yOffset += 10;
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(10);
-    pdf.text("Notes:", 18, yOffset + 2);
-
+    pdf.text("Note:", 20, yOffset);
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(9);
-    const noteLines = pdf.splitTextToSize(data.note, 165);
-    pdf.text(noteLines, 18, yOffset + 8);
+    const noteLines = pdf.splitTextToSize(data.note, 170);
+    pdf.text(noteLines, 35, yOffset);
   }
 
-  // Footer
-  pdf.setFontSize(8);
-  pdf.setFont("helvetica", "italic");
-  pdf.setTextColor(100, 116, 139);
-  pdf.text("Thank you for your business!", 105, 280, { align: "center" });
+  // Decorative wave footer using polygons
+  const waveStart = 240;
+
+  // First wave (light gray) - using polygon points
+  pdf.setFillColor(200, 200, 200);
+  const wave1Points = [
+    [0, waveStart + 30],
+    [30, waveStart + 25],
+    [60, waveStart + 20],
+    [90, waveStart + 25],
+    [120, waveStart + 30],
+    [150, waveStart + 25],
+    [180, waveStart + 20],
+    [210, waveStart + 25],
+    [210, 297],
+    [0, 297],
+  ];
+
+  pdf.setDrawColor(200, 200, 200);
+  pdf.setLineWidth(0);
+  for (let i = 0; i < wave1Points.length - 1; i++) {
+    if (i === 0) {
+      pdf.moveTo(wave1Points[i][0], wave1Points[i][1]);
+    }
+    pdf.lineTo(wave1Points[i + 1][0], wave1Points[i + 1][1]);
+  }
+  pdf.fill();
+
+  // Second wave (darker gray)
+  pdf.setFillColor(100, 100, 100);
+  const wave2Points = [
+    [0, waveStart + 50],
+    [40, waveStart + 55],
+    [80, waveStart + 45],
+    [120, waveStart + 50],
+    [160, waveStart + 55],
+    [200, waveStart + 50],
+    [210, waveStart + 52],
+    [210, 297],
+    [0, 297],
+  ];
+
+  pdf.setDrawColor(100, 100, 100);
+  for (let i = 0; i < wave2Points.length - 1; i++) {
+    if (i === 0) {
+      pdf.moveTo(wave2Points[i][0], wave2Points[i][1]);
+    }
+    pdf.lineTo(wave2Points[i + 1][0], wave2Points[i + 1][1]);
+  }
+  pdf.fill();
 
   //  Generate PDF as buffer
   const pdfBuffer = Buffer.from(pdf.output("arraybuffer"));
