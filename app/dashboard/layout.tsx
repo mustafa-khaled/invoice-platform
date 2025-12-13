@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "../utils/hooks";
 
-import logo from "@/public/next.svg";
+import logo from "@/public/logo.png";
 import Image from "next/image";
 import DashboardLinks from "@/components/dashboard-links";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "../utils/auth";
 import prisma from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 
 async function getUserSession(userId: string) {
@@ -44,14 +43,12 @@ export default async function DashboardLayout({
   return (
     <>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-        <div className="hidden border-r bg-muted/40 md:block">
+        <div className="hidden border-r bg-sidebar md:block">
           <div className="flex flex-col max-h-screen h-full gap-2">
             <div className="h-14 flex items-center border-b px-4 lg:h-[60px] lg:px-6">
               <Link href="/" className="flex items-center gap-2">
-                <Image src={logo} alt="Logo" className="size-20" />
-                <p className=" font-bold">
-                  Invoice <span className="text-blue-600">Marshal</span>
-                </p>
+                <Image src={logo} alt="Logo" className="size-8" />
+                <p className="text-xl font-bold text-primary">Novus</p>
               </Link>
             </div>
             <div className="flex-1">
@@ -63,7 +60,7 @@ export default async function DashboardLayout({
         </div>
 
         <div className="flex flex-col">
-          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <header className="flex h-14 items-center gap-4 border-b bg-sidebar px-4 lg:h-[60px] lg:px-6">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="md:hidden">

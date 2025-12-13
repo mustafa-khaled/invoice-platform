@@ -13,7 +13,7 @@ export default function Graph({
       config={{
         amount: {
           label: "Amount",
-          color: "hsl(var(--primary))",
+          color: "var(--primary)",
         },
       }}
       className="min-h-[300px]"
