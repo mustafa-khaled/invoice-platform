@@ -4,13 +4,6 @@ import { X } from "lucide-react";
 import { FieldMetadata } from "@conform-to/react";
 import { Textarea } from "./ui/textarea";
 import { formatCurrency } from "@/app/utils/format-currency";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 
 interface InvoiceItemRowProps {
   itemField: FieldMetadata<{

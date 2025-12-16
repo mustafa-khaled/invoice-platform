@@ -41,7 +41,10 @@ export async function GET(
     const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
     pdf.addImage(logoBase64, "PNG", 20, 20, 20, 20);
   } catch (error) {
-    // If logo fails, show text placeholder
+    // If logo fails, show text placeholder and log error in development
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to load logo:", error);
+    }
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
     pdf.setTextColor(100, 100, 100);
@@ -113,13 +116,26 @@ export async function GET(
   pdf.setFillColor(240, 240, 240);
   pdf.rect(20, tableTop, tableWidth, 10, "F");
 
+  // Calculate x-positions based on column widths
+  const itemX = 20 + 5; // 5px padding from left
+  const quantityX = itemX + colWidths.item + 5;
+  const priceX = quantityX + colWidths.quantity + 5;
+  const amountX = priceX + colWidths.price;
+
+  // Set header text
   pdf.setFontSize(10);
   pdf.setFont("helvetica", "bold");
   pdf.setTextColor(0, 0, 0);
-  pdf.text("Item", 25, tableTop + 7);
-  pdf.text("Quantity", 95, tableTop + 7, { align: "center" });
-  pdf.text("Price", 130, tableTop + 7, { align: "center" });
-  pdf.text("Amount", 185, tableTop + 7, { align: "right" });
+  pdf.text("Item", itemX, tableTop + 7);
+  pdf.text("Quantity", quantityX + colWidths.quantity / 2, tableTop + 7, {
+    align: "center",
+  });
+  pdf.text("Price", priceX + colWidths.price / 2, tableTop + 7, {
+    align: "center",
+  });
+  pdf.text("Amount", amountX + colWidths.amount - 5, tableTop + 7, {
+    align: "right",
+  });
 
   // Table rows
   let yOffset = tableTop + 17;
@@ -133,26 +149,42 @@ export async function GET(
       rate: number;
       amount: number;
     }) => {
-      pdf.text(item.description ?? "", 25, yOffset);
-      pdf.text((item.quantity ?? 0).toString(), 95, yOffset, {
-        align: "center",
-      });
+      // Item description (left-aligned with padding)
+      const descriptionLines = pdf.splitTextToSize(
+        item.description ?? "",
+        colWidths.item - 10 // 10px padding
+      );
+      pdf.text(descriptionLines, itemX, yOffset);
+
+      // Quantity (center-aligned)
       pdf.text(
-        formatCurrency(item.amount ?? 0, data.currency ?? "USD"),
-        130,
+        (item.quantity ?? 0).toString(),
+        quantityX + colWidths.quantity / 2,
         yOffset,
         { align: "center" }
       );
+
+      // Price (center-aligned)
+      pdf.text(
+        formatCurrency(item.amount ?? 0, data.currency ?? "USD"),
+        priceX + colWidths.price / 2,
+        yOffset,
+        { align: "center" }
+      );
+
+      // Amount (right-aligned)
       pdf.text(
         formatCurrency(
           (item.quantity ?? 0) * (item.amount ?? 0),
           data.currency ?? "USD"
         ),
-        185,
+        amountX + colWidths.amount - 5, // 5px padding from right
         yOffset,
         { align: "right" }
       );
-      yOffset += 10;
+
+      // Move yOffset down based on the number of lines in the description
+      yOffset += 10 * Math.max(1, descriptionLines.length);
     }
   );
 

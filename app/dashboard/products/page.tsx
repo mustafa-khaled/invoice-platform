@@ -22,6 +22,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  createdAt: Date;
+}
+
 async function getData(userId: string) {
   const data = await prisma.product.findMany({
     where: {
@@ -88,7 +96,7 @@ export default async function ProductsRoute() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((product: any) => (
+              {data.map((product: Product) => (
                 <TableRow key={product.id}>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>${product.price.toFixed(2)}</TableCell>

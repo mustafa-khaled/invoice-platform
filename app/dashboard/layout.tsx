@@ -20,7 +20,7 @@ import prisma from "@/lib/prisma";
 import { Toaster } from "@/components/ui/sonner";
 
 async function getUserSession(userId: string) {
-  const data = await prisma.user.findUnique({
+  return await prisma.user.findUnique({
     where: { id: userId },
     select: {
       firstName: true,

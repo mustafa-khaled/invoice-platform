@@ -37,8 +37,18 @@ interface CreateEditInvoiceProps {
   lastName?: string;
   address?: string;
   email?: string;
-  customers?: any[];
-  products?: any[];
+  customers?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    address: string | null;
+  }>;
+  products?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    description: string | null;
+  }>;
 }
 
 export default function CreateEditInvoice({

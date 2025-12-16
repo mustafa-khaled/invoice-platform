@@ -47,8 +47,7 @@ async function getInvoices(userId: string) {
       amount,
       sortKey: dayKey, // YYYY-MM-DD
     }))
-    .sort((a, b) => (a.sortKey > b.sortKey ? 1 : -1))
-    .map(({ sortKey, ...rest }) => rest);
+    .sort((a, b) => (a.sortKey > b.sortKey ? 1 : -1));
 }
 
 export default async function InvoiceChart() {
