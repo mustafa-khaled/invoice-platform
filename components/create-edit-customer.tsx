@@ -9,7 +9,18 @@ import { useActionState } from "react";
 import { parseWithZod } from "@conform-to/zod";
 import { useForm } from "@conform-to/react";
 import { customerSchema } from "@/app/utils/customer.schema";
-import { Customer } from "@prisma/client";
+
+// Define Customer type locally since Prisma 7 doesn't export model types directly
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  address: string | null;
+  phone: string | null;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default function CreateEditCustomer({
   customerData,

@@ -11,9 +11,11 @@ import prisma from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/format-currency";
 import { Badge } from "./ui/badge";
-import { InvoiceStatus } from "@prisma/client";
 import { formatDate } from "@/app/utils/format-date";
 import NoDataFound from "./no-data-found";
+
+// Define InvoiceStatus type locally since Prisma 7 doesn't export enum types directly
+type InvoiceStatus = "PAID" | "PENDING" | "CANCELLED";
 
 async function getData(userId: string) {
   const data = await prisma.invoice.findMany({
