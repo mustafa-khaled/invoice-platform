@@ -6,18 +6,10 @@ import Image from "next/image";
 import DashboardLinks from "@/components/dashboard-links";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, User2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { signOut } from "../utils/auth";
+import { Menu } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { Toaster } from "@/components/ui/sonner";
+import UserMenu from "@/components/user-menu";
 
 async function getUserSession(userId: string) {
   return await prisma.user.findUnique({
@@ -75,42 +67,7 @@ export default async function DashboardLayout({
             </Sheet>
 
             <div className="flex items-center ml-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full"
-                  >
-                    <User2 />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/invoices">Invoices</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem asChild>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await signOut();
-                      }}
-                      className="w-full"
-                    >
-                      <button type="submit" className="w-full text-left">
-                        Sign out
-                      </button>
-                    </form>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu />
             </div>
           </header>
 
