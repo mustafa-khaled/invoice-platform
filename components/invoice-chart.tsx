@@ -10,8 +10,8 @@ import {
 import prisma from "@/lib/prisma";
 
 async function getInvoices(userId: string) {
-  // Fetch last 30 days of paid invoices
-  const invoices = await prisma.invoice.findMany({
+  // 1. Fetch data from DB
+  const rawData = await prisma.invoice.findMany({
     where: {
       userId,
       status: "PAID",
@@ -27,27 +27,35 @@ async function getInvoices(userId: string) {
     orderBy: { createdAt: "asc" },
   });
 
-  const dailyTotals = invoices.reduce<Record<string, number>>(
-    (acc, invoice) => {
-      // ISO day key: 2025-01-30
-      const dayKey = invoice.createdAt.toISOString().split("T")[0];
+  // 2. Group by date
+  const aggregatedData = rawData.reduce<Record<string, number>>((acc, curr) => {
+    const date = new Date(curr.createdAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    acc[date] = (acc[date] || 0) + curr.total;
+    return acc;
+  }, {});
 
-      acc[dayKey] = (acc[dayKey] ?? 0) + invoice.total;
-      return acc;
-    },
-    {}
-  );
+  // 3. Fill in missing days for the last 30 days
+  const result = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
 
-  return Object.entries(dailyTotals)
-    .map(([dayKey, amount]) => ({
-      date: new Date(dayKey).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      amount,
-      sortKey: dayKey, // YYYY-MM-DD
-    }))
-    .sort((a, b) => (a.sortKey > b.sortKey ? 1 : -1));
+    const dateStr = d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
+    result.push({
+      date: dateStr,
+      amount: aggregatedData[dateStr] || 0,
+    });
+  }
+
+  return result;
 }
 
 export default async function InvoiceChart() {

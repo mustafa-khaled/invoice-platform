@@ -21,6 +21,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Search } from "@/components/search";
+import { Pagination } from "@/components/pagination";
 
 interface Product {
   id: string;
@@ -30,31 +32,65 @@ interface Product {
   createdAt: Date;
 }
 
-async function getData(userId: string) {
-  const data = await prisma.product.findMany({
-    where: {
-      userId: userId,
-    },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      description: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+async function getData(userId: string, query?: string, page: number = 1) {
+  const pageSize = 10;
+  const skip = (page - 1) * pageSize;
 
-  return data;
+  const where = {
+    userId: userId,
+    OR: query
+      ? [
+          { name: { contains: query, mode: "insensitive" as const } },
+          { description: { contains: query, mode: "insensitive" as const } },
+        ]
+      : undefined,
+  };
+
+  const [data, totalCount] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        description: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: pageSize,
+      skip: skip,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return {
+    data,
+    totalPages: Math.ceil(totalCount / pageSize),
+  };
 }
 
-export default async function ProductsRoute() {
-  const session = await requireUser();
-  const data = await getData(session.user?.id as string);
+export default async function ProductsRoute({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const query = params?.query || "";
+  const page = params?.page || "1";
 
-  if (!data.length) {
+  const session = await requireUser();
+  const { data, totalPages } = await getData(
+    session.user?.id as string,
+    query,
+    Number(page) || 1
+  );
+
+  if (!data.length && !query) {
     return (
       <NoDataFound
         message="No products found!"
@@ -85,6 +121,9 @@ export default async function ProductsRoute() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <Search placeholder="Search products..." />
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -109,6 +148,7 @@ export default async function ProductsRoute() {
               ))}
             </TableBody>
           </Table>
+          <Pagination totalPages={totalPages} />
         </CardContent>
       </Card>
     </>

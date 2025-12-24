@@ -1,4 +1,5 @@
 import CustomersList from "@/components/customers-list";
+import { Search } from "@/components/search";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +17,18 @@ export const metadata: Metadata = {
   description: "Manage and view your customers right here.",
 };
 
-export default function CustomerRoute() {
+export default async function CustomerRoute({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const query = params?.query || "";
+  const page = params?.page || "1";
+
   return (
     <Card>
       <CardHeader>
@@ -33,7 +45,10 @@ export default function CustomerRoute() {
         </div>
       </CardHeader>
       <CardContent>
-        <CustomersList />
+        <div className="mb-4">
+          <Search placeholder="Search customers..." />
+        </div>
+        <CustomersList query={query} page={page} />
       </CardContent>
     </Card>
   );

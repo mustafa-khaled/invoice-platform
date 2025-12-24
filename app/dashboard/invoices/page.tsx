@@ -1,4 +1,5 @@
 import InvoiceList from "@/components/invoice-list";
+import { Search } from "@/components/search";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +17,18 @@ export const metadata: Metadata = {
   description: "Manage and view your invoices.",
 };
 
-export default function InvoicesPage() {
+export default async function InvoicesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const query = params?.query || "";
+  const page = params?.page || "1";
+
   return (
     <Card>
       <CardHeader>
@@ -33,7 +45,10 @@ export default function InvoicesPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <InvoiceList />
+        <div className="mb-4">
+          <Search placeholder="Search invoices..." />
+        </div>
+        <InvoiceList query={query} page={page} />
       </CardContent>
     </Card>
   );

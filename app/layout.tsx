@@ -13,8 +13,45 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice Platform",
-  description: "A platform to manage and create invoices easily.",
+  title: {
+    template: "%s | Novus Invoice Platform",
+    default: "Novus Invoice Platform",
+  },
+  description:
+    "A premium invoice management platform for freelancers and small businesses. Create, manage, and track invoices with ease.",
+  keywords: [
+    "invoice",
+    "billing",
+    "management",
+    "saas",
+    "freelancer",
+    "business",
+    "accounting",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://novus-invoice.com",
+    siteName: "Novus Invoice Platform",
+    title: "Novus Invoice Platform",
+    description:
+      "A premium invoice management platform for freelancers and small businesses.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Novus Invoice Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Novus Invoice Platform",
+    description:
+      "A premium invoice management platform for freelancers and small businesses.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
