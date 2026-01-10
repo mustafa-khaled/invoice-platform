@@ -10,6 +10,7 @@ import { Button } from "./ui/button";
 import {
   CheckCircle,
   DownloadCloud,
+  Eye,
   Mail,
   MoreHorizontal,
   Pencil,
@@ -53,6 +54,12 @@ export default function InvoiceActions({
           <Link href={`/dashboard/invoices/${invoiceId}`}>
             <Pencil className="size-4 mr-2" />
             Edit Invoice
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/invoice/${invoiceId}`} target="_blank">
+            <Eye className="size-4 mr-2" />
+            View Invoice
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSendReminder}>

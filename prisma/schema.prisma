@@ -27,6 +27,24 @@ model User {
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  settings Settings?
+}
+
+model Settings {
+  id          String   @id @default(cuid())
+
+  currency    String   @default("USD")
+  taxName     String?
+  taxRate     Float    @default(0)
+
+  brandColor  String   @default("#2563EB")
+
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
  
 model Account {
@@ -99,6 +117,9 @@ model Invoice {
   invoiceNumber Int
   note          String?
   total         Float         @default(0)
+  
+  stripePaymentId String?
+
 
   items     InvoiceItem[]
   createdAt DateTime      @default(now())

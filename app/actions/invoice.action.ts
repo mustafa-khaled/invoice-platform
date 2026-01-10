@@ -5,9 +5,9 @@ import { requireUser } from "../utils/hooks";
 import { invoiceSchema } from "../utils/zod-schemas";
 import prisma from "@/lib/prisma";
 import {
-  mailClient,
   mailtrapRecipients,
   mailtrapSender,
+  sendEmail,
 } from "../utils/mailtrap";
 import { formatDate } from "../utils/format-date";
 import { redirect } from "next/navigation";
@@ -80,9 +80,8 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
     },
   });
 
-  mailClient.send({
+  sendEmail({
     from: mailtrapSender,
-    // TODO: You can customize the recipient email as needed if you added your own domain on Mailtrap
     to: mailtrapRecipients,
     template_uuid: "94447b52-fcb1-49e7-b92e-90910835df50",
 
@@ -93,7 +92,8 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
       DUE_DATE: dueDate,
       AMOUNT: computedTotal,
       CURRENCY: currency,
-      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
+      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoice.id}`,
+      INVOICE_PDF_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
     },
   });
 
@@ -185,8 +185,7 @@ export async function editInvoice(prevState: unknown, formData: FormData) {
     },
   });
 
-  // Send email notification about the updated invoice
-  mailClient.send({
+  sendEmail({
     from: mailtrapSender,
     to: mailtrapRecipients,
     template_uuid: "86216c25-bf86-4272-98a5-48790427d8fa",
@@ -197,7 +196,8 @@ export async function editInvoice(prevState: unknown, formData: FormData) {
       DUE_DATE: dueDate,
       AMOUNT: computedTotal,
       CURRENCY: currency,
-      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
+      INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoice.id}`,
+      INVOICE_PDF_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoice.id}`,
     },
   });
 

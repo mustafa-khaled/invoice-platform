@@ -98,3 +98,12 @@ export const productSchema = z.object({
 });
 
 export type ProductData = z.infer<typeof productSchema>;
+
+export const settingsSchema = z.object({
+  currency: z.string().min(1, "Currency is required"),
+  taxName: z.string().optional(),
+  taxRate: z.coerce.number().min(0, "Tax rate must be a positive number"),
+  brandColor: z.string().min(1, "Brand color is required"),
+});
+
+export type SettingsData = z.infer<typeof settingsSchema>;

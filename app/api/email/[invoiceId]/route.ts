@@ -1,9 +1,9 @@
 import { formatDate } from "@/app/utils/format-date";
 import { requireUser } from "@/app/utils/hooks";
 import {
-  mailClient,
   mailtrapRecipients,
   mailtrapSender,
+  sendEmail,
 } from "@/app/utils/mailtrap";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -35,7 +35,8 @@ export async function POST(
     }
 
     // Send email notification about the updated invoice
-    mailClient.send({
+    // Send email notification about the updated invoice
+    await sendEmail({
       from: mailtrapSender,
       to: mailtrapRecipients,
       template_uuid: "3c8f51d6-8c5f-41c8-8ee3-aa302e2f769c",
@@ -46,7 +47,8 @@ export async function POST(
         DUE_DATE: invoiceData.dueDate || "N/A",
         AMOUNT: invoiceData.total,
         CURRENCY: invoiceData.currency,
-        INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoiceId}`,
+        INVOICE_URL: `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoiceId}`,
+        INVOICE_PDF_URL: `${process.env.NEXT_PUBLIC_APP_URL}/api/invoice/${invoiceId}`,
       },
     });
 
